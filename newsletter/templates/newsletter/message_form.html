@@ -1,0 +1,18 @@
+{% extends 'newsletter/base.html' %}
+{% block title %}{{ view.object|yesno:"Редактировать сообщение,Создать сообщение" }}{% endblock %}
+
+{% block content %}
+<div class="container-xxl container-p-y">
+  <h4 class="fw-bold mb-3">{{ view.object|yesno:"Редактировать сообщение,Создать сообщение" }}</h4>
+  <div class="card"><div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <div class="mb-3">{{ form.theme.label_tag }} {{ form.theme }}</div>
+      <div class="mb-3">{{ form.content.label_tag }} {{ form.content }}</div>
+      <button type="submit" class="btn btn-primary">Сохранить</button>
+      <a href="{% url 'newsletter:message_list' %}" class="btn btn-secondary">Отмена</a>
+    </form>
+  </div></div>
+</div>
+{% endblock %}
