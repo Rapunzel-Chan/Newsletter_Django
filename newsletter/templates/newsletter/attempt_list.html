@@ -1,0 +1,44 @@
+{% extends 'newsletter/base.html' %}
+{% block title %}Попытки рассылок{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+  <h4 class="fw-bold py-3 mb-4">Попытки отправки рассылок</h4>
+
+  <div class="card">
+    <h5 class="card-header">Журнал попыток</h5>
+    <div class="table-responsive text-nowrap">
+      <table class="table">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Рассылка</th>
+            <th>Дата и время</th>
+            <th>Успех</th>
+            <th>Ответ сервера</th>
+          </tr>
+        </thead>
+        <tbody class="table-border-bottom-0">
+          {% for attempt in object_list %}
+          <tr>
+            <td>#{{ attempt.id }}</td>
+            <td>{{ attempt.mailing }}</td>
+            <td>{{ attempt.created_at|date:"d.m.Y H:i" }}</td>
+            <td>
+              {% if attempt.is_successful %}
+              <span class="badge bg-success">Успешно</span>
+              {% else %}
+              <span class="badge bg-danger">Ошибка</span>
+              {% endif %}
+            </td>
+            <td>{{ attempt.response|default:"—" }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5">Нет записей о попытках.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

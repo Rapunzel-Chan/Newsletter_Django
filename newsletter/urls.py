@@ -4,12 +4,12 @@ import newsletter
 from newsletter.apps import NewsletterConfig
 from newsletter.views import ClientListView, ClientCreateView, ClientDetailView, ClientUpdateView, ClientDeleteView, \
     MailingUpdateView, MailingDeleteView, MailingDetailView, MailingCreateView, MailingListView, MessageDeleteView, \
-    MessageUpdateView, MessageDetailView, MessageCreateView, MessageListView, NewsletterHomeView
+    MessageUpdateView, MessageDetailView, MessageCreateView, MessageListView
 
 app_name = NewsletterConfig.name
 
 urlpatterns = [
-    path('', NewsletterHomeView.as_view(),  name="newsletter"),
+    # path('', NewsletterHomeView.as_view(),  name="newsletter"),
     path('clients/', ClientListView.as_view(), name='client_list'),
     path('clients/create/', ClientCreateView.as_view(), name='client_create'),
     path('clients/<int:pk>/', ClientDetailView.as_view(), name='client_detail'),
@@ -20,7 +20,7 @@ urlpatterns = [
     path('messages/<int:pk>/', MessageDetailView.as_view(), name='message_detail'),
     path('messages/<int:pk>/update/', MessageUpdateView.as_view(), name='message_update'),
     path('messages/<int:pk>/delete/', MessageDeleteView.as_view(), name='message_delete'),
-    path('mailings/', MailingListView.as_view(), name='mailing_list'),
+    path('', MailingListView.as_view(), name='mailing_list'),
     path('mailings/create/', MailingCreateView.as_view(), name='mailing_create'),
     path('mailings/<int:pk>/', MailingDetailView.as_view(), name='mailing_detail'),
     path('mailings/<int:pk>/update/', MailingUpdateView.as_view(), name='mailing_update'),
