@@ -1,0 +1,20 @@
+{% extends 'newsletter/base.html' %}
+{% block title %}Профиль клиента{% endblock %}
+
+{% block content %}
+<div class="container-xxl container-p-y">
+  <h4 class="fw-bold py-3">Клиент #{{ object.id }}</h4>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <p><strong>Email:</strong> {{ object.email }}</p>
+      <p><strong>ФИО:</strong> {{ object.full_name|default:"—" }}</p>
+      <p><strong>Комментарий:</strong> {{ object.comment|default:"—" }}</p>
+    </div>
+  </div>
+
+  <a href="{% url 'newsletter:client_update' object.id %}" class="btn btn-warning">Редактировать</a>
+  <a href="{% url 'newsletter:client_delete' object.id %}" class="btn btn-danger">Удалить</a>
+  <a href="{% url 'newsletter:client_list' %}" class="btn btn-secondary">Назад</a>
+</div>
+{% endblock %}

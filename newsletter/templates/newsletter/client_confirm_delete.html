@@ -1,0 +1,18 @@
+{% extends 'newsletter/base.html' %}
+{% block title %}Удаление клиента{% endblock %}
+
+{% block content %}
+<div class="container-xxl container-p-y">
+  <h4 class="fw-bold py-3">Удалить клиента #{{ object.id }}?</h4>
+  <div class="card mb-4">
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        <p>Вы уверены, что хотите удалить клиента <strong>{{ object.email }}</strong>?</p>
+        <button type="submit" class="btn btn-danger">Да, удалить</button>
+        <a href="{% url 'newsletter:client_detail' object.id %}" class="btn btn-secondary">Отмена</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView, TemplateView
 
-from newsletter.models import Client, Message, Mailing
+from newsletter.models import Client, Message, Mailing, AttemptMailing
 
 
 # Create your views here.
@@ -74,6 +74,14 @@ class MessageDeleteView(DeleteView):
 class MailingListView(ListView):
     model = Mailing
     template_name = 'mailings/mailing_list.html'
+    context_object_name = 'mailings'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['total_mailings'] = Mailing.objects.count()
+        context['active_mailings'] = Mailing.objects.filter(status='started').count()
+        context['unique_clients'] = Client.objects.count()
+        return context
 
 
 class MailingDetailView(DetailView):
@@ -99,3 +107,14 @@ class MailingDeleteView(DeleteView):
     model = Mailing
     template_name = 'mailings/mailing_confirm_delete.html'
     success_url = reverse_lazy('newsletter:mailing_list')
+
+
+class AttemptMailingListView(ListView):
+    model = AttemptMailing
+    template_name = 'attempts/attempt_list.html'
+    context_object_name = 'attempts'
+
+
+class AttemptMailingDetailView(DetailView):
+    model = AttemptMailing
+    template_name = 'attempts/attempt_detail.html'
