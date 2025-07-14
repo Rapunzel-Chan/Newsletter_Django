@@ -1,0 +1,22 @@
+{% extends 'newsletter/base.html' %}
+{% load status_filter %}
+{% block title %}Рассылка #{{ object.id }}{% endblock %}
+
+{% block content %}
+<div class="container-xxl container-p-y">
+  <h4 class="fw-bold mb-3">Рассылка #{{ object.id }}</h4>
+  <div class="card mb-4"><div class="card-body">
+    <p><strong>Статус:</strong>
+      <span class="badge bg-label-{{ object.status|status_class }}">{{ object.get_status_display }}</span>
+    </p>
+    <p><strong>Дата начала:</strong> {{ object.first_sending|date:"d.m.Y H:i" }}</p>
+    <p><strong>Дата окончания:</strong> {{ object.last_sending|date:"d.m.Y H:i" }}</p>
+    <p><strong>Сообщение:</strong> {{ object.message.theme|default:"—" }}</p>
+    <p><strong>Получатели:</strong> {{ object.clients.count }}</p>
+  </div></div>
+
+  <a href="{% url 'newsletter:mailing_update' object.id %}" class="btn btn-warning">Редактировать</a>
+  <a href="{% url 'newsletter:mailing_delete' object.id %}" class="btn btn-danger">Удалить</a>
+  <a href="{% url 'newsletter:mailing_list' %}" class="btn btn-secondary">Назад</a>
+</div>
+{% endblock %}

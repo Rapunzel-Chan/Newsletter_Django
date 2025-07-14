@@ -1,0 +1,16 @@
+{% extends 'newsletter/base.html' %}
+{% block title %}Удалить рассылку{% endblock %}
+
+{% block content %}
+<div class="container-xxl container-p-y">
+  <h4 class="fw-bold mb-3">Удалить рассылку #{{ object.id }}?</h4>
+  <div class="card mb-4"><div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+      <p>Уверены, хотите удалить рассылку со статусом "{{ object.get_status_display }}"?</p>
+      <button type="submit" class="btn btn-danger">Удалить</button>
+      <a href="{% url 'newsletter:mailing_detail' object.id %}" class="btn btn-secondary">Отмена</a>
+    </form>
+  </div></div>
+</div>
+{% endblock %}
