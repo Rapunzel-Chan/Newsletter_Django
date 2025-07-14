@@ -43,12 +43,12 @@ class Message(models.Model):
 
 class Mailing(models.Model):
     first_sending = models.DateTimeField(
-        verbose_name="Дата и время первой отправки рассылки",
-        help_text="Введите дату и время первой отправки рассылки"
+        # verbose_name="Дата и время первой отправки рассылки",
+        # help_text="Введите дату и время первой отправки рассылки"
     )
-    last_sending = models.DateTimeField(
-        verbose_name="Дата окончания отправки рассылки",
-        help_text="Введите дату и время последней отправки рассылки"
+    last_sending = models.DateTimeField(null=True, blank=True
+        # verbose_name="Дата окончания отправки рассылки",
+        # help_text="Введите дату и время последней отправки рассылки"
     )
     STATUS_CHOICES = [
         ('created', 'Создана'),
@@ -83,6 +83,11 @@ class Mailing(models.Model):
 
     def __str__(self):
         return f"Рассылка №{self.pk} — {self.status}"
+
+    def mark_completed(self):
+        self.status = 'completed'
+        self.end_time = timezone.now()
+        self.save()
 
 
 class AttemptMailing(models.Model):

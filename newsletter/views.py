@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView, TemplateView
 
+from newsletter.forms import MailingForm, MessageForm
 from newsletter.models import Client, Message, Mailing, AttemptMailing
 
 
@@ -53,7 +54,7 @@ class MessageDetailView(DetailView):
 
 class MessageCreateView(CreateView):
     model = Message
-    fields = '__all__'
+    form_class = MessageForm
     template_name = 'newsletter/message_form.html'
     success_url = reverse_lazy('newsletter:message_list')
 
@@ -91,9 +92,13 @@ class MailingDetailView(DetailView):
 
 class MailingCreateView(CreateView):
     model = Mailing
-    fields = '__all__'
+    form_class = MailingForm
     template_name = 'newsletter/mailing_form.html'
     success_url = reverse_lazy('newsletter:mailing_list')
+
+    def form_valid(self, form):
+        form.instance.status = 'created'
+        return super().form_valid(form)
 
 
 class MailingUpdateView(UpdateView):

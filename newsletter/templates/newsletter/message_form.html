@@ -1,18 +1,49 @@
 {% extends 'newsletter/base.html' %}
-{% block title %}{{ view.object|yesno:"Редактировать сообщение,Создать сообщение" }}{% endblock %}
+{% load form_filter %}
+{% block title %}Создать сообщение{% endblock %}
 
 {% block content %}
-<div class="container-xxl container-p-y">
-  <h4 class="fw-bold mb-3">{{ view.object|yesno:"Редактировать сообщение,Создать сообщение" }}</h4>
-  <div class="card"><div class="card-body">
-    <form method="post">
-      {% csrf_token %}
-      {{ form.non_field_errors }}
-      <div class="mb-3">{{ form.theme.label_tag }} {{ form.theme }}</div>
-      <div class="mb-3">{{ form.content.label_tag }} {{ form.content }}</div>
-      <button type="submit" class="btn btn-primary">Сохранить</button>
-      <a href="{% url 'newsletter:message_list' %}" class="btn btn-secondary">Отмена</a>
-    </form>
-  </div></div>
+<div class="container-xxl flex-grow-1 container-p-y" style="max-width: 400px;">
+  <h4 class="fw-bold py-3 mb-4">Создание сообщения</h4>
+
+  <div class="card mb-4 shadow-sm">
+    <div class="card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        <!-- Тема -->
+        <div class="mb-3">
+          <label for="{{ form.theme.id_for_label }}" class="form-label fw-semibold">
+            Тема <span class="text-danger">*</span>
+          </label>
+          <div class="input-group">
+            <span class="input-group-text bg-primary text-white"><i class="bx bx-edit"></i></span>
+            {{ form.theme|add_class:"form-control" }}
+          </div>
+          {% if form.theme.errors %}
+            <div class="text-danger small mt-1">{{ form.theme.errors }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Текст сообщения -->
+        <div class="mb-3">
+          <label for="{{ form.content.id_for_label }}" class="form-label fw-semibold">
+            Текст сообщения <span class="text-danger">*</span>
+          </label>
+          {{ form.content|add_class:"form-control" }}
+          {% if form.content.errors %}
+            <div class="text-danger small mt-1">{{ form.content.errors }}</div>
+          {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+          <i class="bx bx-save"></i> Сохранить
+        </button>
+        <a href="{% url 'newsletter:message_list' %}" class="btn btn-outline-secondary ms-2">
+          <i class="bx bx-x"></i> Отмена
+        </a>
+      </form>
+    </div>
+  </div>
 </div>
 {% endblock %}
