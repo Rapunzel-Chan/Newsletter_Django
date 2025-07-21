@@ -2,38 +2,50 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8"/>
     <title>{% block title %}Newsletter Admin{% endblock %}</title>
 
     <!-- Sneat Bootstrap CSS -->
-    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/boxicons.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/theme-default.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/boxicons.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/theme-default.css' %}"/>
 
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <header class="p-3 mb-4 border-bottom">
-        <div class="container d-flex flex-wrap justify-content-between align-items-center">
-            <a href="{% url 'newsletter:mailing_list' %}" class="d-flex align-items-center mb-2 mb-lg-0 text-dark text-decoration-none">
-                <span class="fs-4 fw-semibold">Newsletter Admin</span>
-            </a>
+<header class="p-3 mb-4 border-bottom">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center">
+        <a href="{% url 'newsletter:mailing_list' %}"
+           class="d-flex align-items-center mb-2 mb-lg-0 text-dark text-decoration-none">
+            <span class="fs-4 fw-semibold">Newsletter Admin</span>
+        </a>
 
-            <nav class="nav">
-                <a href="{% url 'newsletter:mailing_list' %}" class="nav-link px-2 link-secondary">Рассылки</a>
-                <a href="{% url 'newsletter:client_list' %}" class="nav-link px-2 link-dark">Клиенты</a>
-                <a href="{% url 'newsletter:message_list' %}" class="nav-link px-2 link-dark">Сообщения</a>
-                <a href="{% url 'newsletter:attempt_list' %}" class="nav-link px-2 link-dark">Попытки рассылок</a>
-            </nav>
-        </div>
-    </header>
+        <nav class="nav">
+            <a href="{% url 'newsletter:mailing_list' %}" class="nav-link px-2 link-secondary">Рассылки</a>
+            <a href="{% url 'newsletter:client_list' %}" class="nav-link px-2 link-dark">Клиенты</a>
+            <a href="{% url 'newsletter:message_list' %}" class="nav-link px-2 link-dark">Сообщения</a>
+            <a href="{% url 'newsletter:attempt_list' %}" class="nav-link px-2 link-dark">Попытки рассылок</a>
+            {% if user.is_authenticated %}
+            <form action="{% url 'users:logout' %}" method="post">{% csrf_token %}
+                <button>Выход</button>
+            </form>
+            <a href="{% url 'users:profile' %}">Профиль</a>
+            {% else %}
+            <a href="{% url 'users:login' %}">Вход</a>
+            <a href="{% url 'users:register' %}">Регистрация</a>
+            <a href="{% url 'users:password_reset' %}">Забыли пароль?</a>
+            {% endif %}
 
-    <main class="container">
-        {% block content %}{% endblock %}
-    </main>
+        </nav>
+    </div>
+</header>
 
-    <!-- Sneat Bootstrap JS -->
-    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
-    {% block extra_js %}{% endblock %}
+<main class="container">
+    {% block content %}{% endblock %}
+</main>
+
+<!-- Sneat Bootstrap JS -->
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+{% block extra_js %}{% endblock %}
 </body>
 </html>
