@@ -1,4 +1,7 @@
 from django.db import models
+from django.utils import timezone
+
+from users.models import User
 
 
 # Create your models here.
@@ -9,6 +12,7 @@ class Client(models.Model):
                             null=True)
     comment = models.TextField(verbose_name="Комментарий", help_text="Введите Ваш комментарий", blank=True,
                                null=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='client_set', null=True, blank=True)
 
     class Meta:
         verbose_name = "Получатель"
@@ -28,6 +32,7 @@ class Message(models.Model):
                              null=True)
     content = models.TextField(verbose_name="Тело письма", help_text="Введите текст Вашего письма", blank=True,
                                null=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='message_set', null=True, blank=True)
 
     class Meta:
         verbose_name = "Сообщение"
@@ -72,6 +77,7 @@ class Mailing(models.Model):
         verbose_name="Получатели",
         help_text="Укажите Получателей Вашего сообщения"
     )
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='mailing_set', null=True, blank=True)
 
     class Meta:
         verbose_name = "Рассылка"
