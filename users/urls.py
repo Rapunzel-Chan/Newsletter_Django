@@ -3,29 +3,38 @@ from django.urls import path
 from django.views.generic import TemplateView
 from django.contrib.auth import views as auth_views
 from users.apps import UsersConfig
-from users.views import UserCreateView, UserProfileUpdateView, UserProfileView, email_verification, logout_view
+from users.views import UserCreateView, EmailVerificationView, CustomLoginView, CustomLogoutView
 
 app_name = UsersConfig.name
 
 urlpatterns = [
-    path("login/", LoginView.as_view(template_name="login.html"), name="login"),
-    path("logout/", logout_view, name="logout"),
+    path("login/", CustomLoginView.as_view(template_name="login.html"), name="login"),
+    path("logout/", CustomLogoutView.as_view(), name="logout"),
     path("logout/done/", TemplateView.as_view(template_name="users/logout.html"), name="logout_done"),
     path("register/", UserCreateView.as_view(), name="register"),
-    path("email-confirm/<str:token>/", email_verification, name="email-confirm"),
-    path("profile/", UserProfileView.as_view(), name="profile"),
-    path("profile/edit/", UserProfileUpdateView.as_view(), name="profile_edit"),
-    path('password_reset/', auth_views.PasswordResetView.as_view(
-        template_name='users/password_reset_form.html',
-        email_template_name='users/password_reset_email.html'),
-         name='password_reset'),
-    path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(
-        template_name='users/password_reset_done.html'),
-         name='password_reset_done'),
-    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
-        template_name='users/password_reset_confirm.html'),
-         name='password_reset_confirm'),
-    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(
-        template_name='users/password_reset_complete.html'),
-         name='password_reset_complete'),
+    path("email_verification/<str:token>/", EmailVerificationView.as_view(), name="email_verification"),
+    # path("profile/", UserProfileView.as_view(), name="profile"),
+    # path("profile/edit/", UserProfileUpdateView.as_view(), name="profile_edit"),
+    path(
+        "password_reset/",
+        auth_views.PasswordResetView.as_view(
+            template_name="users/password_reset_form.html", email_template_name="users/password_reset_password.html"
+        ),
+        name="password_reset",
+    ),
+    path(
+        "password_reset/done/",
+        auth_views.PasswordResetDoneView.as_view(template_name="users/password_reset_done.html"),
+        name="password_reset_done",
+    ),
+    path(
+        "reset/<uidb64>/<token>/",
+        auth_views.PasswordResetConfirmView.as_view(template_name="users/password_reset_confirm.html"),
+        name="password_reset_confirm",
+    ),
+    path(
+        "reset/done/",
+        auth_views.PasswordResetCompleteView.as_view(template_name="users/password_reset_complete.html"),
+        name="password_reset_complete",
+    ),
 ]

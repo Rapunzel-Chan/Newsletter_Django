@@ -9,12 +9,13 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         now = timezone.now()
-        mailings = Mailing.objects.filter(status__in=['created', 'started'], first_sending__lte=now,
-                                          last_sending__gte=now)
+        mailings = Mailing.objects.filter(
+            status__in=["created", "started"], first_sending__lte=now, last_sending__gte=now
+        )
 
         for mailing in mailings:
-            if mailing.status == 'created':
-                mailing.status = 'started'
+            if mailing.status == "created":
+                mailing.status = "started"
                 mailing.save()
                 self.stdout.write(f"Mailing #{mailing.pk} started.")
 
@@ -35,6 +36,6 @@ class Command(BaseCommand):
                     self.stderr.write(f"Failed to send email to {client.email}: {e}")
 
             if now >= mailing.last_sending:
-                mailing.status = 'completed'
+                mailing.status = "completed"
                 mailing.save()
                 self.stdout.write(f"Mailing #{mailing.pk} completed.")
