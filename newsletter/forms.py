@@ -22,9 +22,10 @@ class MessageForm(forms.ModelForm):
             "content": forms.Textarea(attrs={"placeholder": "Введите текст сообщения", "rows": 5}),
         }
 
+
 class StyleFormMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
-            existing_classes = field.widget.attrs.get('class', '')
-            field.widget.attrs['class'] = f'{existing_classes} form-control'.strip()
+            existing_classes = field.widget.attrs.get("class", "")
+            field.widget.attrs["class"] = f"{existing_classes} form-control".strip()

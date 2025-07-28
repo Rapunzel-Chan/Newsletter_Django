@@ -9,10 +9,10 @@ def status_class(value):
     Возвращает CSS-класс по статусу рассылки.
     """
     if not value:
-        return "secondary"
+        return "bg-secondary text-white"
     mapping = {
-        "created": "$purple",
-        "started": "success",
-        "completed": "info",
+        "created": "bg-rose-200 text-gray-800",
+        "started": "bg-rose-400 text-white",
+        "completed": "bg-rose-600 text-white",
     }
-    return mapping.get(value, "secondary")
+    return mapping.get(value, "bg-secondary text-white")

@@ -3,11 +3,19 @@ from django.urls import path
 from django.views.generic import TemplateView
 from django.contrib.auth import views as auth_views
 from users.apps import UsersConfig
-from users.views import UserCreateView, EmailVerificationView, CustomLoginView, CustomLogoutView
+from users.views import (
+    UserCreateView,
+    EmailVerificationView,
+    CustomLoginView,
+    CustomLogoutView,
+    deactivate_user,
+    UserListView,
+)
 
 app_name = UsersConfig.name
 
 urlpatterns = [
+    path("", UserListView.as_view(), name="users_list"),
     path("login/", CustomLoginView.as_view(template_name="login.html"), name="login"),
     path("logout/", CustomLogoutView.as_view(), name="logout"),
     path("logout/done/", TemplateView.as_view(template_name="users/logout.html"), name="logout_done"),
@@ -37,4 +45,5 @@ urlpatterns = [
         auth_views.PasswordResetCompleteView.as_view(template_name="users/password_reset_complete.html"),
         name="password_reset_complete",
     ),
+    path("<int:user_id>/deactivate/", deactivate_user, name="deactivate_user"),
 ]

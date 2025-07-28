@@ -21,9 +21,9 @@ class Client(models.Model):
         verbose_name = "Получатель"
         verbose_name_plural = "Получатели"
         ordering = ["email"]
-        # permissions = [
-        #     ("can_unpublish_blog", "Can unpublish blog"),
-        # ]
+        permissions = [
+            ("view_all_clients", "Can view all clients"),
+        ]
 
     def __str__(self):
         return self.full_name or self.email
@@ -43,7 +43,7 @@ class Message(models.Model):
         verbose_name_plural = "Сообщения"
         # ordering = ["email"]
         # permissions = [
-        #     ("can_unpublish_blog", "Can unpublish blog"),
+        #     ("view_all_messages", "Can view all messages"),
         # ]
 
     def __str__(self):
@@ -51,9 +51,11 @@ class Message(models.Model):
 
 
 class Mailing(models.Model):
-    first_sending = models.DateTimeField(null=True, blank=True
-    # verbose_name="Дата и время первой отправки рассылки",
-    # help_text="Введите дату и время первой отправки рассылки"
+    first_sending = models.DateTimeField(
+        null=True,
+        blank=True,
+        # verbose_name="Дата и время первой отправки рассылки",
+        # help_text="Введите дату и время первой отправки рассылки"
     )
     last_sending = models.DateTimeField(
         null=True,
@@ -79,9 +81,9 @@ class Mailing(models.Model):
         verbose_name = "Рассылка"
         verbose_name_plural = "Рассылки"
         # ordering = ["email"]
-        # permissions = [
-        #     ("can_unpublish_blog", "Can unpublish blog"),
-        # ]
+        permissions = [
+            ("view_all_mailings", "Can view all mailings"),
+        ]
 
     def __str__(self):
         return f"Рассылка №{self.pk} — {self.status}"
