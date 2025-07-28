@@ -28,7 +28,7 @@ class UserCreateView(CreateView):
         user.save()
 
         url = self.request.build_absolute_uri(
-            reverse("users:email_confirm", kwargs={"token": token})
+            reverse("users:email_verification", kwargs={"token": token})
         )
 
         send_mail(
@@ -59,4 +59,4 @@ class CustomLoginView(LoginView):
 
 class CustomLogoutView(LogoutView):
     template_name = "users/logout.html"
-    next_page = reverse_lazy("home")
+    next_page = reverse_lazy("users:login")

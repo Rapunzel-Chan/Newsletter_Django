@@ -51,9 +51,9 @@ class Message(models.Model):
 
 
 class Mailing(models.Model):
-    first_sending = models.DateTimeField(
-        # verbose_name="Дата и время первой отправки рассылки",
-        # help_text="Введите дату и время первой отправки рассылки"
+    first_sending = models.DateTimeField(null=True, blank=True
+    # verbose_name="Дата и время первой отправки рассылки",
+    # help_text="Введите дату и время первой отправки рассылки"
     )
     last_sending = models.DateTimeField(
         null=True,

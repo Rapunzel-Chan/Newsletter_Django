@@ -8,8 +8,11 @@ def status_class(value):
     """
     Возвращает CSS-класс по статусу рассылки.
     """
-    return {
-        "created": "Создана",
-        "started": "Запущена",
-        "completed": "Завершена",
-    }.get(value, "secondary")
+    if not value:
+        return "secondary"
+    mapping = {
+        "created": "$purple",
+        "started": "success",
+        "completed": "info",
+    }
+    return mapping.get(value, "secondary")

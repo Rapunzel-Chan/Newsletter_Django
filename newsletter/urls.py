@@ -1,6 +1,7 @@
 from django.urls import path
 
 import newsletter
+from newsletter import views
 from newsletter.apps import NewsletterConfig
 from newsletter.models import AttemptMailing
 from newsletter.views import (
@@ -44,4 +45,5 @@ urlpatterns = [
     path("mailings/<int:pk>/delete/", MailingDeleteView.as_view(), name="mailing_delete"),
     path("attempts/", AttemptMailingListView.as_view(), name="attempt_list"),
     path("attempts/<int:pk>/", AttemptMailingDetailView.as_view(), name="attempt_detail"),
+    path('mailing/<int:pk>/send/', views.send_mailing, name='send_mailing'),
 ]

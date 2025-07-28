@@ -228,3 +228,40 @@ class AttemptMailingDetailView(LoginRequiredMixin, DetailView):
         if user.groups.filter(name="Менеджеры").exists():
             return AttemptMailing.objects.all()
         return AttemptMailing.objects.filter(mailing__owner=user)
+
+
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from django.shortcuts import redirect
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect
+from django.http import Http404
+from django.utils import timezone
+
+from newsletter.models import Mailing
+
+
+@login_required
+def send_mailing(request, pk):
+    if request.method == "POST":
+        mailing = get_object_or_404(Mailing, pk=pk)
+        if mailing.owner != request.user:
+            raise Http404("Нет доступа к этой рассылке.")
+
+        if mailing.status != "created":
+            # Если рассылка уже запущена или завершена — можно либо ничего не делать, либо вернуть ошибку/сообщение
+            # Для простоты — просто редиректим
+            return redirect("newsletter:mailing_list")
+
+        mailing.first_sending = timezone.now()
+        mailing.status = "started"
+        mailing.save()
+
+        # Здесь можешь добавить вызов фоновой задачи для отправки писем
+        # Например: send_mailing_task.delay(mailing.pk)
+
+        return redirect("newsletter:mailing_detail", pk=mailing.pk)
+    else:
+        return redirect("newsletter:mailing_list")
+

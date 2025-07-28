@@ -5,9 +5,9 @@ from newsletter.models import Mailing, Client, Message
 class MailingForm(forms.ModelForm):
     class Meta:
         model = Mailing
-        fields = ["first_sending", "message", "clients"]
+        fields = ["message", "clients"]
         widgets = {
-            "first_sending": forms.DateTimeInput(attrs={"type": "datetime-local"}),
+            # "first_sending": forms.DateTimeInput(attrs={"type": "datetime-local"}),
             "clients": forms.SelectMultiple(attrs={"class": "form-select"}),
             "message": forms.Select(attrs={"class": "form-select"}),
         }

@@ -29,7 +29,6 @@
             <form action="{% url 'users:logout' %}" method="post">{% csrf_token %}
                 <button>Выход</button>
             </form>
-            <a href="{% url 'users:profile' %}">Профиль</a>
             {% else %}
             <a href="{% url 'users:login' %}">Вход</a>
             <a href="{% url 'users:register' %}">Регистрация</a>
