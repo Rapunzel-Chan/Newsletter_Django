@@ -39,7 +39,10 @@ class ClientListView(LoginRequiredMixin, ListView):
     template_name = "newsletter/client_list.html"
 
     def get_queryset(self):
-        return super().get_queryset().filter(owner=self.request.user)
+        qs = super().get_queryset()
+        if self.request.user.groups.filter(name="Менеджеры").exists():
+            return qs
+        return qs.filter(owner=self.request.user)
 
 
 class ClientDetailView(LoginRequiredMixin, DetailView):
@@ -143,21 +146,37 @@ class MessageDeleteView(LoginRequiredMixin, DeleteView):
             raise Http404("Вы не являетесь владельцем этой рассылки.")
         return obj
 
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
 
+@method_decorator(cache_page(60 * 15), name='dispatch')
 class MailingListView(LoginRequiredMixin, ListView):
     model = Mailing
     template_name = "newsletter/mailing_list.html"
     context_object_name = "mailings"
 
     def get_queryset(self):
-        return super().get_queryset().filter(owner=self.request.user)
+        qs = super().get_queryset()
+        if self.request.user.groups.filter(name="Менеджеры").exists():
+            return qs
+        return qs.filter(owner=self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["total_mailings"] = Mailing.objects.filter(owner=self.request.user).count()
-        context["active_mailings"] = Mailing.objects.filter(owner=self.request.user, status="started").count()
-        context["unique_clients"] = Client.objects.filter(owner=self.request.user).count()
-        context["can_change_mailing"] = self.request.user.has_perm("newsletter.change_mailing")  # добавлено
+        user = self.request.user
+        if user.groups.filter(name="Менеджеры").exists():
+            mailings = Mailing.objects.all()
+            clients = Client.objects.all()
+        else:
+            mailings = Mailing.objects.filter(owner=user)
+            clients = Client.objects.filter(owner=user)
+
+        context.update({
+            "total_mailings": mailings.count(),
+            "active_mailings": mailings.filter(status="started").count(),
+            "unique_clients": clients.count(),
+            "can_change_mailing": user.has_perm("newsletter.change_mailing")
+        })
         return context
 
 
@@ -269,10 +288,10 @@ def send_mailing(request, pk):
                 recipient_list=[client.email],
                 fail_silently=False,
             )
-            AttemptMailing.objects.create(mailing=mailing, is_successful=True, response="OK")
+            AttemptMailing.objects.create(mailing=mailing, status = "success", response="OK")
             sent += 1
         except Exception as e:
-            AttemptMailing.objects.create(mailing=mailing, is_successful=False, response=str(e))
+            AttemptMailing.objects.create(mailing=mailing, status = "failed", response=str(e))
             errors += 1
 
     if now >= mailing.last_sending:
@@ -297,3 +316,26 @@ def stop_mailing(request, pk):
     mailing.save()
     messages.success(request, "Рассылка успешно завершена.")
     return redirect("newsletter:mailing_list")
+
+from django.views.generic import DetailView
+from django.db.models import Count, Q
+from django.contrib.auth.mixins import LoginRequiredMixin
+from .models import Mailing, AttemptMailing
+
+class MailingStatsView(LoginRequiredMixin, DetailView):
+    model = Mailing
+    template_name = "newsletter/mailing_stats.html"
+    context_object_name = "mailing"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        mailing = self.get_object()
+
+        stats = AttemptMailing.objects.filter(mailing=mailing).aggregate(
+            total=Count("id"),
+            success=Count("id", filter=Q(status="success")),
+            failed=Count("id", filter=Q(status="failed")),
+        )
+        context["stats"] = stats
+        context["attempts"] = AttemptMailing.objects.filter(mailing=mailing).order_by("-created_at")
+        return context

@@ -9,14 +9,14 @@ from users.views import (
     CustomLoginView,
     CustomLogoutView,
     deactivate_user,
-    UserListView,
+    UserListView, UserDetailView, UserProfileUpdateView,
 )
 
 app_name = UsersConfig.name
 
 urlpatterns = [
-    path("", UserListView.as_view(), name="users_list"),
-    path("login/", CustomLoginView.as_view(template_name="login.html"), name="login"),
+    path("user_list/", UserListView.as_view(), name="user_list"),
+    path("login/", CustomLoginView.as_view(template_name="users/login.html"), name="login"),
     path("logout/", CustomLogoutView.as_view(), name="logout"),
     path("logout/done/", TemplateView.as_view(template_name="users/logout.html"), name="logout_done"),
     path("register/", UserCreateView.as_view(), name="register"),
@@ -46,4 +46,6 @@ urlpatterns = [
         name="password_reset_complete",
     ),
     path("<int:user_id>/deactivate/", deactivate_user, name="deactivate_user"),
+    path("<int:pk>/", UserDetailView.as_view(), name="user_detail"),
+    path("profile/edit/", UserProfileUpdateView.as_view(), name="profile_edit"),
 ]

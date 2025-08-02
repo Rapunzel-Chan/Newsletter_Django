@@ -25,10 +25,10 @@
             <td>{{ attempt.mailing }}</td>
             <td>{{ attempt.created_at|date:"d.m.Y H:i" }}</td>
             <td>
-              {% if attempt.is_successful %}
+              {% if attempt.status == "success" %}
               <span class="badge bg-success">Успешно</span>
               {% else %}
-              <span class="badge bg-danger">Ошибка</span>
+              <span class="badge bg-danger">Не успешно</span>
               {% endif %}
             </td>
             <td>{{ attempt.response|default:"—" }}</td>

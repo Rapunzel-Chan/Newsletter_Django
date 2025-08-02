@@ -97,17 +97,34 @@ class Mailing(models.Model):
 class AttemptMailing(models.Model):
     created_at = models.DateTimeField(
         auto_now_add=True,
-        verbose_name="Дата и время первой попытки отправки рассылки",
-        help_text="Введите дату и время первой попытки отправки рассылки",
+        verbose_name="Дата и время попытки отправки рассылки",
+        help_text="Заполняется автоматически при создании попытки",
     )
-    is_successful = models.BooleanField(
-        default=False, verbose_name="Успешно", help_text="Укажите, успешной ли была попытка отправки"
+
+    STATUS_CHOICES = [
+        ('success', 'Успешно'),
+        ('failed', 'Не успешно'),
+    ]
+
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='failed',
+        verbose_name="Статус попытки"
     )
+
     response = models.TextField(
-        verbose_name="Ответ почтового сервера", help_text="Введите ответ почтового сервера", blank=True, null=True
+        verbose_name="Ответ почтового сервера",
+        help_text="Введите ответ почтового сервера",
+        blank=True,
+        null=True
     )
+
     mailing = models.ForeignKey(
-        Mailing, verbose_name="Рассылка", help_text="Укажите текст рассылки", on_delete=models.CASCADE
+        Mailing,
+        verbose_name="Рассылка",
+        help_text="Укажите текст рассылки",
+        on_delete=models.CASCADE
     )
 
     class Meta:
@@ -115,4 +132,4 @@ class AttemptMailing(models.Model):
         verbose_name_plural = "Попытки отправки"
 
     def __str__(self):
-        return f"Попытка #{self.pk} — {'Успешно' if self.is_successful else 'Не успешно'}"
+        return f"Попытка #{self.pk} — {'Успешно' if self.status == 'success' else 'Не успешно'}"

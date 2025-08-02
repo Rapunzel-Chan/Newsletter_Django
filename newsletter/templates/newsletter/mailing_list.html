@@ -1,5 +1,7 @@
 {% extends 'newsletter/base.html' %}
 {% load status_filter %}
+{% load user_tags %}
+
 {% block title %}Список рассылок{% endblock %}
 
 {% block content %}
@@ -70,15 +72,26 @@
                     <td>{{ mailing.first_sending|date:"d.m.Y H:i" }}</td>
                     <td>{{ mailing.last_sending|date:"d.m.Y H:i" }}</td>
                     <td>
+                        {% if mailing.owner == request.user %}
                         <form method="post" action="{% url 'newsletter:send_mailing' mailing.id %}">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-sm btn-primary">Отправить</button>
                         </form>
+                        {% endif %}
 
-                        {% if can_change_mailing and mailing.status != "completed" %}
-                            <a href="{% url 'newsletter:stop_mailing' mailing.pk %}" class="btn btn-danger btn-sm mt-1">Завершить</a>
+                        {% if request.user|in_group:"Менеджеры" %}
+                        {% if mailing.status != "completed" %}
+                        <a href="{% url 'newsletter:stop_mailing' mailing.pk %}" class="btn btn-danger btn-sm mt-1">Завершить</a>
+                        {% endif %}
+                        {% endif %}
+
+                        {% if mailing.owner == request.user or request.user|in_group:"Менеджеры" %}
+                        <a href="{% url 'newsletter:mailing_stats' mailing.pk %}"
+                           class="btn btn-outline-info btn-sm mt-1">Статистика</a>
                         {% endif %}
                     </td>
+
+
                 </tr>
                 {% empty %}
                 <tr>

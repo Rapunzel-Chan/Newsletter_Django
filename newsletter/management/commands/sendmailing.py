@@ -25,17 +25,17 @@ class Command(BaseCommand):
                     send_mail(
                         subject=message.theme or "No Subject",
                         message=message.content or "",
-                        from_email=None,  # Используется DEFAULT_FROM_EMAIL
+                        from_email=None,
                         recipient_list=[client.email],
                         fail_silently=False,
                     )
-                    AttemptMailing.objects.create(mailing=mailing, is_successful=True, response="OK")
+                    AttemptMailing.objects.create(mailing=mailing, status="success", response="OK")
                     self.stdout.write(f"Email sent to {client.email}")
                 except Exception as e:
-                    AttemptMailing.objects.create(mailing=mailing, is_successful=False, response=str(e))
+                    AttemptMailing.objects.create(mailing=mailing, status="failed", response=str(e))
                     self.stderr.write(f"Failed to send email to {client.email}: {e}")
 
-            if now >= mailing.last_sending:
+            if now > mailing.last_sending:
                 mailing.status = "completed"
                 mailing.save()
                 self.stdout.write(f"Mailing #{mailing.pk} completed.")

@@ -3,7 +3,7 @@ import secrets
 from django.contrib import messages
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import CreateView, View, ListView
+from django.views.generic import CreateView, View, ListView, DetailView, UpdateView
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
@@ -13,7 +13,7 @@ from django.urls import reverse_lazy, reverse
 from django.core.mail import send_mail
 
 from .models import User
-from .forms import UserRegisterForm
+from .forms import UserRegisterForm, UserProfileForm
 from config.settings import EMAIL_HOST_USER
 
 
@@ -21,13 +21,13 @@ class UserCreateView(CreateView):
     model = User
     form_class = UserRegisterForm
     template_name = "users/register.html"
-    success_url = reverse_lazy("users:email_sent")
+    success_url = reverse_lazy("users:email_sent") #странная отсылка
 
     def form_valid(self, form):
         user = form.save(commit=False)
         user.is_active = False
         token = secrets.token_hex(16)
-        user.token = token  # Обязательно сохранить токен
+        user.token = token
         user.save()
 
         url = self.request.build_absolute_uri(reverse("users:email_verification", kwargs={"token": token}))
@@ -50,6 +50,16 @@ class EmailVerificationView(View):
         return redirect("users:login")
 
 
+class UserProfileUpdateView(LoginRequiredMixin, UpdateView):
+    model = User
+    form_class = UserProfileForm
+    template_name = "users/profile_edit.html"
+    success_url = reverse_lazy("users:user_detail")
+
+    def get_object(self):
+        return self.request.user
+
+
 from django.contrib.auth.views import LoginView, LogoutView
 
 
@@ -67,14 +77,30 @@ class UserListView(LoginRequiredMixin, ListView):
     template_name = "users/user_list.html"
     context_object_name = "users"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['can_deactivate'] = self.request.user.has_perm('users.can_deactivate_user')
+        return context
 
-@permission_required("auth.change_user", raise_exception=True)
-def block_user(request, user_id):
-    user = get_object_or_404(User, id=user_id)
-    user.is_active = False
-    user.save()
-    messages.warning(request, f"Пользователь {user.email} был заблокирован.")
-    return redirect("users:users_list")
+class UserDetailView(LoginRequiredMixin, DetailView):
+    model = User
+    template_name = "users/user_detail.html"
+    context_object_name = "user_obj"
+
+    def get_queryset(self):
+        if self.request.user.has_perm("users.view_all_users"):
+            return User.objects.all()
+        return User.objects.filter(pk=self.request.user.pk)
+
+
+
+# @permission_required("auth.change_user", raise_exception=True)
+# def block_user(request, user_id):
+#     user = get_object_or_404(User, id=user_id)
+#     user.is_active = False
+#     user.save()
+#     messages.warning(request, f"Пользователь {user.email} был заблокирован.")
+#     return redirect("users:users_list")
 
 
 from django.contrib.auth.decorators import permission_required
@@ -89,4 +115,4 @@ def deactivate_user(request, user_id):
     user.is_active = False
     user.save()
     messages.warning(request, f"Пользователь {user.email} был заблокирован.")
-    return redirect("users:users_list")
+    return redirect("users:user_list")

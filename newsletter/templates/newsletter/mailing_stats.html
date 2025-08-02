@@ -1,0 +1,39 @@
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body">
+    <h5 class="card-title mb-3">Статистика по рассылке</h5>
+    <div class="row">
+      <div class="col-md-4"><strong>Всего:</strong> {{ stats.total }}</div>
+      <div class="col-md-4"><strong>Успешно:</strong> {{ stats.success }}</div>
+      <div class="col-md-4"><strong>Ошибок:</strong> {{ stats.failed }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">Попытки отправки</div>
+  <div class="table-responsive text-nowrap">
+    <table class="table">
+      <thead class="table-light">
+        <tr>
+          <th>ID</th><th>Дата</th><th>Успех</th><th>Ответ</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for attempt in attempts %}
+        <tr>
+          <td>#{{ attempt.id }}</td>
+          <td>{{ attempt.created_at|date:"d.m.Y H:i" }}</td>
+          <td>
+            {% if attempt.status == "success" %}
+              <span class="badge bg-success">✔</span>
+            {% else %}
+              <span class="badge bg-danger">✖</span>
+            {% endif %}
+          </td>
+          <td>{{ attempt.response|escape }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
