@@ -1,0 +1,51 @@
+{% extends "newsletter/base.html" %}
+{% block title %}Статистика{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-sm-4 col-lg-3">
+    <div class="card text-center shadow-sm">
+      <div class="card-body">
+        <h6 class="text-uppercase fw-semibold mb-2">Всего попыток</h6>
+        <h2 class="display-5">{{ stats.total|default:0 }}</h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-4 col-lg-3">
+    <div class="card text-center shadow-sm">
+      <div class="card-body">
+        <h6 class="text-success fw-semibold mb-2">Успешно</h6>
+        <h2 class="display-5">{{ stats.success|default:0 }}</h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-4 col-lg-3">
+    <div class="card text-center shadow-sm">
+      <div class="card-body">
+        <h6 class="text-danger fw-semibold mb-2">Ошибки</h6>
+        <h2 class="display-5">{{ stats.failed|default:0 }}</h2>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Аналитика в виде таблицы или cards -->
+{% if attempts %}
+  <div class="card shadow-sm">
+    <div class="card-header">
+      Последние попытки
+    </div>
+    <ul class="list-group list-group-flush">
+      {% for attempt in attempts|default:"" %}
+      <li class="list-group-item">
+        <div class="d-flex justify-content-between">
+          <span>{{ attempt.created_at|date:"d.m.Y H:i" }}</span>
+          <span class="{% if attempt.status == 'success' %}text-success{% else %}text-danger{% endif %}">
+            {{ attempt.get_status_display }}
+          </span>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
+{% endblock %}

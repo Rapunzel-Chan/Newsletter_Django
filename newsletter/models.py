@@ -42,9 +42,9 @@ class Message(models.Model):
         verbose_name = "Сообщение"
         verbose_name_plural = "Сообщения"
         # ordering = ["email"]
-        # permissions = [
-        #     ("view_all_messages", "Can view all messages"),
-        # ]
+        permissions = [
+            ("view_all_messages", "Can view all messages"),
+        ]
 
     def __str__(self):
         return self.theme or "Без темы"
@@ -128,6 +128,9 @@ class AttemptMailing(models.Model):
     )
 
     class Meta:
+        permissions = [
+            ("view_all_attempts", "Can view all attempts"),
+        ]
         verbose_name = "Попытка отправки"
         verbose_name_plural = "Попытки отправки"
 

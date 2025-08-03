@@ -186,7 +186,7 @@ class MailingDetailView(LoginRequiredMixin, DetailView):
 
     def get_object(self):
         obj = get_object_or_404(Mailing, pk=self.kwargs["pk"])
-        if obj.owner != self.request.user:
+        if obj.owner != self.request.user and not self.request.user.groups.filter(name="Менеджеры").exists():
             raise Http404("Вы не являетесь владельцем этой рассылки.")
         return obj
 
@@ -205,7 +205,7 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
 
 class MailingUpdateView(LoginRequiredMixin, UpdateView):
     model = Mailing
-    fields = ["theme", "content"]
+    fields = MailingForm
     template_name = "newsletter/mailing_form.html"
     success_url = reverse_lazy("newsletter:mailing_list")
 
@@ -263,47 +263,119 @@ from django.utils import timezone
 from newsletter.models import Mailing
 
 
+# @login_required
+# def send_mailing(request, pk):
+#     if request.method != "POST":
+#         return redirect("newsletter:mailing_list")
+#
+#     mailing = get_object_or_404(Mailing, pk=pk)
+#     if mailing.owner != request.user:
+#         raise Http404("Нет доступа")
+#
+#     now = timezone.now()
+#     if mailing.first_sending is None:
+#         mailing.first_sending = now
+#     mailing.status = "started"
+#     mailing.save(update_fields=["status", "first_sending"])
+#
+#     sent, errors = 0, 0
+#     for client in mailing.clients.all():
+#         try:
+#             send_mail(
+#                 subject=mailing.message.theme or "No Subject",
+#                 message=mailing.message.content or "",
+#                 from_email=None,
+#                 recipient_list=[client.email],
+#                 fail_silently=False,
+#             )
+#             AttemptMailing.objects.create(mailing=mailing, status = "success", response="OK")
+#             sent += 1
+#         except Exception as e:
+#             AttemptMailing.objects.create(mailing=mailing, status = "failed", response=str(e))
+#             errors += 1
+#
+#     if mailing.last_sending is not None and now < mailing.last_sending:
+#         messages.warning(request, "Отправку нельзя запускать ранее предыдущей")
+#         return redirects
+#     else:
+#         mailing.status = "completed"
+#         mailing.save()
+#         mailing.mark_completed()
+#     return redirect("newsletter:mailing_detail", pk=pk)
+
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect
+from django.utils import timezone
+from django.core.mail import send_mail
+from django.http import HttpResponseForbidden
+
+from newsletter.models import Mailing, AttemptMailing
+
 @login_required
 def send_mailing(request, pk):
     if request.method != "POST":
         return redirect("newsletter:mailing_list")
 
     mailing = get_object_or_404(Mailing, pk=pk)
-    if mailing.owner != request.user:
-        raise Http404("Нет доступа")
+    user = request.user
+
+    # — только владелец может запускать рассылку
+    if mailing.owner_id != user.id:
+        return HttpResponseForbidden("Вы можете отправлять только свои рассылки.")
 
     now = timezone.now()
-    if mailing.first_sending is None:
-        mailing.first_sending = now
-    mailing.status = "started"
-    mailing.save()
+    if mailing.last_sending and now < mailing.last_sending:
+        messages.warning(request,
+                         f"Повторная отправка возможна не ранее чем {mailing.last_sending:%d.%m.%Y %H:%M}")
+        return redirect("newsletter:mailing_detail", pk=pk)
 
-    sent, errors = 0, 0
+    # первая отправка
+    if not mailing.first_sending:
+        mailing.first_sending = now
+    mailing.status = Mailing.STATUS_CHOICES[1][0]  # "started"
+    mailing.save(update_fields=["first_sending", "status"])
+
+    sent = failed = 0
     for client in mailing.clients.all():
         try:
             send_mail(
-                subject=mailing.message.theme or "No Subject",
+                subject=mailing.message.theme or "Без темы",
                 message=mailing.message.content or "",
-                from_email=None,
+                from_email=None,  # используется DEFAULT_FROM_EMAIL
                 recipient_list=[client.email],
                 fail_silently=False,
             )
-            AttemptMailing.objects.create(mailing=mailing, status = "success", response="OK")
+        except Exception as exc:
+            AttemptMailing.objects.create(
+                mailing=mailing,
+                status='failed',
+                response=str(exc)[: 200]  # обрезаем слишком длинный ответ
+            )
+            failed += 1
+        else:
+            AttemptMailing.objects.create(
+                mailing=mailing,
+                status='success',
+                response="OK"
+            )
             sent += 1
-        except Exception as e:
-            AttemptMailing.objects.create(mailing=mailing, status = "failed", response=str(e))
-            errors += 1
 
-    if now >= mailing.last_sending:
-        mailing.status = "completed"
-        mailing.save()
+    # пост‑обработка
+    mailing.status = Mailing.STATUS_CHOICES[2][0]  # "completed"
+    mailing.last_sending = timezone.now()
+    mailing.save(update_fields=["status", "last_sending"])
 
-    return redirect("newsletter:mailing_detail", pk=pk)
+    mailing.mark_completed()  # также сохраняет status + last_sending
+    messages.success(request, f"Готово: отправлено {sent}, ошибок {failed}.")
+
+    return redirect("newsletter:mailing_stats", pk=pk)
+
 
 
 from django.contrib.auth.decorators import permission_required
 from django.shortcuts import get_object_or_404, redirect
-from django.contrib import messages
+from django.contrib import messages, redirects
 from django.utils import timezone
 from .models import Mailing
 
@@ -331,11 +403,15 @@ class MailingStatsView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         mailing = self.get_object()
 
-        stats = AttemptMailing.objects.filter(mailing=mailing).aggregate(
+        if mailing.owner != self.request.user and not self.request.user.groups.filter(name="Менеджеры").exists():
+            raise Http404
+        else:
+
+            stats = AttemptMailing.objects.filter(mailing=mailing).aggregate(
             total=Count("id"),
             success=Count("id", filter=Q(status="success")),
             failed=Count("id", filter=Q(status="failed")),
         )
-        context["stats"] = stats
-        context["attempts"] = AttemptMailing.objects.filter(mailing=mailing).order_by("-created_at")
-        return context
+            context["stats"] = stats
+            context["attempts"] = AttemptMailing.objects.filter(mailing=mailing).order_by("-created_at")
+            return context

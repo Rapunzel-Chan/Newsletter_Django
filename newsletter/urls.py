@@ -23,6 +23,7 @@ from newsletter.views import (
     AttemptMailingListView,
     AttemptMailingDetailView,
     stop_mailing, MailingStatsView,
+    # UserStatsView, GlobalStatsView, UserListView,
 )
 
 app_name = NewsletterConfig.name
@@ -49,4 +50,7 @@ urlpatterns = [
     path("mailing/<int:pk>/send/", views.send_mailing, name="send_mailing"),
     path("<int:pk>/stop/", stop_mailing, name="stop_mailing"),
     path('mailing/<int:pk>/stats/', MailingStatsView.as_view(), name='mailing_stats'),
+    # path("stats/mine/", UserStatsView.as_view(), name="user_stats"),
+    # path("stats/global/", GlobalStatsView.as_view(), name="global_stats"),
+    # path("stats/users/", UserListView.as_view(), name="user_list"),
 ]

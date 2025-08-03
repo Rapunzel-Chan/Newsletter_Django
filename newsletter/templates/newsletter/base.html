@@ -14,8 +14,8 @@
     {% block extra_css %}{% endblock %}
 
     {% if not request.user.is_authenticated %}
-      <meta http-equiv="Cache-Control" content="max-age=600" />
-      <meta http-equiv="Pragma" content="cache" />
+    <meta http-equiv="Cache-Control" content="max-age=600"/>
+    <meta http-equiv="Pragma" content="cache"/>
     {% endif %}
 </head>
 
