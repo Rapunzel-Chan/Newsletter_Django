@@ -73,10 +73,10 @@
                     <td>{{ mailing.last_sending|date:"d.m.Y H:i" }}</td>
                     <td>
                         {% if mailing.owner == request.user %}
-                        <form method="post" action="{% url 'newsletter:send_mailing' mailing.id %}">
+                          <form method="post" action="{% url 'newsletter:send_mailing' mailing.id %}">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-sm btn-primary">Отправить</button>
-                        </form>
+                          </form>
                         {% endif %}
 
                         {% if request.user|in_group:"Менеджеры" %}

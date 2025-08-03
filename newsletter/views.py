@@ -149,7 +149,7 @@ class MessageDeleteView(LoginRequiredMixin, DeleteView):
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 
-@method_decorator(cache_page(60 * 15), name='dispatch')
+# @method_decorator(cache_page(60 * 15), name='dispatch')
 class MailingListView(LoginRequiredMixin, ListView):
     model = Mailing
     template_name = "newsletter/mailing_list.html"
@@ -202,10 +202,15 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
         form.instance.owner = self.request.user
         return super().form_valid(form)
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
 
 class MailingUpdateView(LoginRequiredMixin, UpdateView):
     model = Mailing
-    fields = MailingForm
+    form_class = MailingForm
     template_name = "newsletter/mailing_form.html"
     success_url = reverse_lazy("newsletter:mailing_list")
 
@@ -215,17 +220,30 @@ class MailingUpdateView(LoginRequiredMixin, UpdateView):
             raise Http404("Вы не являетесь владельцем этой рассылки.")
         return obj
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
 
 class MailingDeleteView(LoginRequiredMixin, DeleteView):
     model = Mailing
     template_name = "newsletter/mailing_confirm_delete.html"
     success_url = reverse_lazy("newsletter:mailing_list")
 
-    def get_object(self):
-        obj = get_object_or_404(Mailing, pk=self.kwargs["pk"])
-        if obj.owner != self.request.user:
-            raise Http404("Вы не являетесь владельцем этой рассылки.")
-        return obj
+    # def get_object(self):
+    #     obj = get_object_or_404(Mailing, pk=self.kwargs["pk"])
+    #     if obj.owner != self.request.user:
+    #         raise Http404("Вы не являетесь владельцем этой рассылки.")
+    #     return obj
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        user = request.user
+
+        if obj.owner != user and not user.is_superuser:
+            # даже менеджер не может
+            raise Http404("Вы не можете редактировать или удалять чужую рассылку.")
+        return super().dispatch(request, *args, **kwargs)
 
 
 class AttemptMailingListView(LoginRequiredMixin, ListView):
@@ -362,11 +380,11 @@ def send_mailing(request, pk):
             sent += 1
 
     # пост‑обработка
-    mailing.status = Mailing.STATUS_CHOICES[2][0]  # "completed"
+    # mailing.status = Mailing.STATUS_CHOICES[2][0]  # "completed"
     mailing.last_sending = timezone.now()
     mailing.save(update_fields=["status", "last_sending"])
 
-    mailing.mark_completed()  # также сохраняет status + last_sending
+    # mailing.mark_completed()  # также сохраняет status + last_sending
     messages.success(request, f"Готово: отправлено {sent}, ошибок {failed}.")
 
     return redirect("newsletter:mailing_stats", pk=pk)
