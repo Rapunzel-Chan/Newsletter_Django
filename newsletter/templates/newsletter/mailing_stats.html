@@ -1,39 +1,91 @@
-<div class="card border-0 shadow-sm mb-4">
-  <div class="card-body">
-    <h5 class="card-title mb-3">Статистика по рассылке</h5>
-    <div class="row">
-      <div class="col-md-4"><strong>Всего:</strong> {{ stats.total }}</div>
-      <div class="col-md-4"><strong>Успешно:</strong> {{ stats.success }}</div>
-      <div class="col-md-4"><strong>Ошибок:</strong> {{ stats.failed }}</div>
+{% extends 'newsletter/base.html' %}
+{% load static %}
+
+{% block title %}Статистика{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <!-- Кол-во рассылок -->
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bx bx-mail-send bx-lg mb-2 text-primary"></i>
+                <h5 class="card-title">Рассылки</h5>
+                <p class="card-text fs-3 fw-bold">{{ total_mailings }}</p>
+            </div>
+        </div>
     </div>
-  </div>
+
+    <!-- Кол-во клиентов -->
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bx bx-user bx-lg mb-2 text-info"></i>
+                <h5 class="card-title">Клиенты</h5>
+                <p class="card-text fs-3 fw-bold">{{ total_clients }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Успешные попытки -->
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bx bx-check-circle bx-lg mb-2 text-success"></i>
+                <h5 class="card-title">Успешные</h5>
+                <p class="card-text fs-3 fw-bold">{{ successful_attempts }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ошибки -->
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bx bx-error-circle bx-lg mb-2 text-danger"></i>
+                <h5 class="card-title">Ошибки</h5>
+                <p class="card-text fs-3 fw-bold">{{ failed_attempts }}</p>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div class="card">
-  <div class="card-header">Попытки отправки</div>
-  <div class="table-responsive text-nowrap">
-    <table class="table">
-      <thead class="table-light">
-        <tr>
-          <th>ID</th><th>Дата</th><th>Успех</th><th>Ответ</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for attempt in attempts %}
-        <tr>
-          <td>#{{ attempt.id }}</td>
-          <td>{{ attempt.created_at|date:"d.m.Y H:i" }}</td>
-          <td>
-            {% if attempt.status == "success" %}
-              <span class="badge bg-success">✔</span>
-            {% else %}
-              <span class="badge bg-danger">✖</span>
-            {% endif %}
-          </td>
-          <td>{{ attempt.response|escape }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+<!-- График попыток -->
+<div class="card mt-4">
+    <div class="card-body d-flex flex-column align-items-center">
+        <h5 class="card-title mb-3">Статистика попыток</h5>
+        <canvas id="attemptChart" style="max-width: 300px; max-height: 300px; width: 100%; height: auto;"></canvas>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('attemptChart').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Успешные', 'Ошибки'],
+            datasets: [{
+                label: 'Попытки',
+                data: [{{ successful_attempts }}, {{ failed_attempts }}],
+                backgroundColor: [
+                    'rgba(40, 167, 69, 0.7)',  // зелёный
+                    'rgba(220, 53, 69, 0.7)'   // красный
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

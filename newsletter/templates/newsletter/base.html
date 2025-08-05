@@ -3,7 +3,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8"/>
-    <title>{% block title %}Newsletter Admin{% endblock %}</title>
+    <title>{% block title %}Сервис Рассылок{% endblock %}</title>
 
     <!-- Sneat Bootstrap CSS -->
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}"/>
@@ -24,7 +24,9 @@
     <div class="container d-flex flex-wrap justify-content-between align-items-center">
         <a href="{% url 'newsletter:mailing_list' %}"
            class="d-flex align-items-center mb-2 mb-lg-0 text-dark text-decoration-none">
-            <span class="fs-4 fw-semibold">Newsletter Admin</span>
+           <span class="fs-4 fw-semibold px-3 py-2 rounded bg-primary text-white shadow-sm">
+               Сервис Рассылок <span class="text-warning">"Быстрые ноги"</span>
+           </span>
         </a>
 
         {% include 'newsletter/inc_menu.html' %}

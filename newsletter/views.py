@@ -462,7 +462,17 @@ from django.views.decorators.cache import cache_page
 from newsletter.models import Mailing, AttemptMailing, Client
 
 
-@method_decorator(cache_page(60 * 5), name='dispatch')
+from django.shortcuts import render
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import TemplateView
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+
+from newsletter.models import Mailing, AttemptMailing, Client
+
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import TemplateView
+
 class MailingStatsView(LoginRequiredMixin, TemplateView):
     template_name = "newsletter/mailing_stats.html"
 
@@ -476,16 +486,21 @@ class MailingStatsView(LoginRequiredMixin, TemplateView):
             attempts = AttemptMailing.objects.all()
             clients = Client.objects.all()
         else:
-            mailings = Mailing.objects.filter(user=user)
-            attempts = AttemptMailing.objects.filter(mailing__user=user)
-            clients = Client.objects.filter(user=user)
+            mailings = Mailing.objects.filter(owner=user)
+            attempts = AttemptMailing.objects.filter(mailing__owner=user)
+            clients = Client.objects.filter(owner=user)
 
         context.update({
             "total_mailings": mailings.count(),
             "total_clients": clients.count(),
             "successful_attempts": attempts.filter(status="success").count(),
-            "failed_attempts": attempts.filter(status="fail").count(),
+            "failed_attempts": attempts.filter(status="failed").count(),
             "mailings": mailings,
         })
-
         return context
+
+    def render_to_response(self, context, **response_kwargs):
+        response = super().render_to_response(context, **response_kwargs)
+        # Кешируем клиентски на 5 минут (300 секунд), только в браузере (private)
+        patch_cache_control(response, private=True, max_age=300)
+        return response
