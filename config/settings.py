@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "users",
     "newsletter",
     "phonenumber_field",
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,64 @@
+{% extends 'newsletter/base.html' %}
+{% load static %}
+{% block title %}Редактировать профиль{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow-sm mx-auto" style="max-width: 600px;">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">Редактировать профиль</h4>
+    </div>
+    <div class="card-body">
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <div class="mb-3">
+          <label for="id_email" class="form-label">Email</label>
+          <input type="email" name="email" class="form-control" id="id_email" value="{{ form.email.value|default_if_none:'' }}" readonly>
+          <div class="form-text">Email изменить нельзя</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="id_phone" class="form-label">Телефон</label>
+          <input type="text" name="phone" class="form-control {% if form.phone.errors %}is-invalid{% endif %}" id="id_phone" value="{{ form.phone.value|default_if_none:'' }}" placeholder="+7 (999) 999-99-99">
+          {% if form.phone.errors %}
+            <div class="invalid-feedback">
+              {{ form.phone.errors.0 }}
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="mb-3">
+          <label for="id_country" class="form-label">Страна</label>
+          <input type="text" name="country" class="form-control {% if form.country.errors %}is-invalid{% endif %}" id="id_country" value="{{ form.country.value|default_if_none:'' }}" placeholder="Введите страну">
+          {% if form.country.errors %}
+            <div class="invalid-feedback">
+              {{ form.country.errors.0 }}
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Аватар</label>
+          <div class="mb-2">
+            {% if user.avatar %}
+              <img src="{{ user.avatar.url }}" alt="Avatar" class="rounded-circle" width="80" height="80">
+            {% else %}
+              <img src="{% static 'img/avatar-placeholder.png' %}" alt="Avatar" class="rounded-circle" width="80" height="80">
+            {% endif %}
+          </div>
+          <input type="file" name="avatar" class="form-control {% if form.avatar.errors %}is-invalid{% endif %}">
+          {% if form.avatar.errors %}
+            <div class="invalid-feedback">
+              {{ form.avatar.errors.0 }}
+            </div>
+          {% endif %}
+          <div class="form-text">Максимальный размер файла: 2MB</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Сохранить изменения</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

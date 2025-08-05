@@ -412,24 +412,80 @@ from django.db.models import Count, Q
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Mailing, AttemptMailing
 
-class MailingStatsView(LoginRequiredMixin, DetailView):
-    model = Mailing
+# class MailingStatsView(LoginRequiredMixin, DetailView):
+#     model = Mailing
+#     template_name = "newsletter/mailing_stats.html"
+#     context_object_name = "mailing"
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         mailing = self.get_object()
+#
+#         if mailing.owner != self.request.user and not self.request.user.groups.filter(name="Менеджеры").exists():
+#             raise Http404
+#         else:
+#
+#             stats = AttemptMailing.objects.filter(mailing=mailing).aggregate(
+#             total=Count("id"),
+#             success=Count("id", filter=Q(status="success")),
+#             failed=Count("id", filter=Q(status="failed")),
+#         )
+#             context["stats"] = stats
+#             context["attempts"] = AttemptMailing.objects.filter(mailing=mailing).order_by("-created_at")
+#             return context
+
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.http import condition
+from django.views.generic import TemplateView
+from django.utils.cache import patch_cache_control
+
+# @method_decorator(cache_page(60 * 5), name='dispatch')
+# class NewsletterStatisticsView(TemplateView):
+#     template_name = "newsletter/statistics.html"
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['total_subscribers'] = Subscriber.objects.count()
+#         context['sent_emails'] = SentEmail.objects.count()
+#         return context
+#
+#     def render_to_response(self, context, **response_kwargs):
+#         response = super().render_to_response(context, **response_kwargs)
+#         patch_cache_control(response, public=True, max_age=300)  # клиентское кеширование на 5 минут
+#         return response
+from django.views.generic import TemplateView
+from django.utils.decorators import method_decorator
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.decorators.cache import cache_page
+
+from newsletter.models import Mailing, AttemptMailing, Client
+
+
+@method_decorator(cache_page(60 * 5), name='dispatch')
+class MailingStatsView(LoginRequiredMixin, TemplateView):
     template_name = "newsletter/mailing_stats.html"
-    context_object_name = "mailing"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        mailing = self.get_object()
+        user = self.request.user
+        is_manager = user.groups.filter(name="Менеджеры").exists()
 
-        if mailing.owner != self.request.user and not self.request.user.groups.filter(name="Менеджеры").exists():
-            raise Http404
+        if is_manager:
+            mailings = Mailing.objects.all()
+            attempts = AttemptMailing.objects.all()
+            clients = Client.objects.all()
         else:
+            mailings = Mailing.objects.filter(user=user)
+            attempts = AttemptMailing.objects.filter(mailing__user=user)
+            clients = Client.objects.filter(user=user)
 
-            stats = AttemptMailing.objects.filter(mailing=mailing).aggregate(
-            total=Count("id"),
-            success=Count("id", filter=Q(status="success")),
-            failed=Count("id", filter=Q(status="failed")),
-        )
-            context["stats"] = stats
-            context["attempts"] = AttemptMailing.objects.filter(mailing=mailing).order_by("-created_at")
-            return context
+        context.update({
+            "total_mailings": mailings.count(),
+            "total_clients": clients.count(),
+            "successful_attempts": attempts.filter(status="success").count(),
+            "failed_attempts": attempts.filter(status="fail").count(),
+            "mailings": mailings,
+        })
+
+        return context
