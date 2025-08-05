@@ -1,17 +1,10 @@
-from django.contrib.auth.views import LoginView
 from django.urls import path
 from django.views.generic import TemplateView
-from django.contrib.auth import views as auth_views
+
 from users.apps import UsersConfig
-from users.views import (
-    UserCreateView,
-    EmailVerificationView,
-    CustomLoginView,
-    CustomLogoutView,
-    deactivate_user,
-    UserListView, UserDetailView, UserProfileUpdateView, UserPasswordResetView, UserPasswordResetDoneView,
-    UserPasswordResetConfirmView, UserPasswordResetCompleteView,
-)
+from users.views import (CustomLoginView, CustomLogoutView, EmailSentView, EmailVerificationView, UserCreateView,
+                         UserDetailView, UserListView, UserPasswordResetCompleteView, UserPasswordResetConfirmView,
+                         UserPasswordResetDoneView, UserPasswordResetView, UserProfileUpdateView, deactivate_user)
 
 app_name = UsersConfig.name
 
@@ -22,10 +15,9 @@ urlpatterns = [
     path("logout/done/", TemplateView.as_view(template_name="users/logout.html"), name="logout_done"),
     path("register/", UserCreateView.as_view(), name="register"),
     path("email_verification/<str:token>/", EmailVerificationView.as_view(), name="email_verification"),
-    # path("profile/", UserProfileView.as_view(), name="profile"),
-    # path("profile/edit/", UserProfileUpdateView.as_view(), name="profile_edit"),
     path(
-        "password_reset/", UserPasswordResetView.as_view(
+        "password_reset/",
+        UserPasswordResetView.as_view(
             template_name="users/password_reset_form.html", email_template_name="users/password_reset_password.html"
         ),
         name="password_reset",
@@ -48,4 +40,5 @@ urlpatterns = [
     path("<int:user_id>/deactivate/", deactivate_user, name="deactivate_user"),
     path("<int:pk>/", UserDetailView.as_view(), name="user_detail"),
     path("profile/edit/", UserProfileUpdateView.as_view(), name="profile_edit"),
+    path("email-sent/", EmailSentView.as_view(), name="email_sent"),
 ]

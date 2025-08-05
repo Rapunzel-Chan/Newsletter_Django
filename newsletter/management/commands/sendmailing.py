@@ -1,7 +1,8 @@
-from django.core.management.base import BaseCommand
 from django.core.mail import send_mail
+from django.core.management.base import BaseCommand
 from django.utils import timezone
-from newsletter.models import Mailing, AttemptMailing
+
+from newsletter.models import AttemptMailing, Mailing
 
 
 class Command(BaseCommand):

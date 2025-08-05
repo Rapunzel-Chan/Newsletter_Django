@@ -3,7 +3,6 @@ from django.utils import timezone
 
 from users.models import User
 
-
 # Create your models here.
 
 
@@ -41,7 +40,7 @@ class Message(models.Model):
     class Meta:
         verbose_name = "Сообщение"
         verbose_name_plural = "Сообщения"
-        # ordering = ["email"]
+        ordering = ["owner"]
         permissions = [
             ("view_all_messages", "Can view all messages"),
         ]
@@ -54,14 +53,10 @@ class Mailing(models.Model):
     first_sending = models.DateTimeField(
         null=True,
         blank=True,
-        # verbose_name="Дата и время первой отправки рассылки",
-        # help_text="Введите дату и время первой отправки рассылки"
     )
     last_sending = models.DateTimeField(
         null=True,
         blank=True,
-        # verbose_name="Дата окончания отправки рассылки",
-        # help_text="Введите дату и время последней отправки рассылки"
     )
     STATUS_CHOICES = [
         ("created", "Создана"),
@@ -80,7 +75,7 @@ class Mailing(models.Model):
     class Meta:
         verbose_name = "Рассылка"
         verbose_name_plural = "Рассылки"
-        # ordering = ["email"]
+        ordering = ["first_sending"]
         permissions = [
             ("view_all_mailings", "Can view all mailings"),
         ]
@@ -102,29 +97,18 @@ class AttemptMailing(models.Model):
     )
 
     STATUS_CHOICES = [
-        ('success', 'Успешно'),
-        ('failed', 'Не успешно'),
+        ("success", "Успешно"),
+        ("failed", "Не успешно"),
     ]
 
-    status = models.CharField(
-        max_length=10,
-        choices=STATUS_CHOICES,
-        default='failed',
-        verbose_name="Статус попытки"
-    )
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="failed", verbose_name="Статус попытки")
 
     response = models.TextField(
-        verbose_name="Ответ почтового сервера",
-        help_text="Введите ответ почтового сервера",
-        blank=True,
-        null=True
+        verbose_name="Ответ почтового сервера", help_text="Введите ответ почтового сервера", blank=True, null=True
     )
 
     mailing = models.ForeignKey(
-        Mailing,
-        verbose_name="Рассылка",
-        help_text="Укажите текст рассылки",
-        on_delete=models.CASCADE
+        Mailing, verbose_name="Рассылка", help_text="Укажите текст рассылки", on_delete=models.CASCADE
     )
 
     class Meta:

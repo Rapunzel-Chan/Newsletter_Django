@@ -3,25 +3,24 @@ import secrets
 from django.contrib import messages
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import CreateView, View, ListView, DetailView, UpdateView
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes
-from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth import login, get_user_model
-from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse_lazy, reverse
+from django.contrib.auth.views import (LoginView, LogoutView, PasswordResetCompleteView, PasswordResetConfirmView,
+                                       PasswordResetDoneView, PasswordResetView)
 from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse, reverse_lazy
+from django.views.generic import CreateView, DetailView, ListView, TemplateView, UpdateView, View
 
-from .models import User
-from .forms import UserRegisterForm, UserProfileForm
 from config.settings import EMAIL_HOST_USER
+
+from .forms import UserProfileForm, UserRegisterForm
+from .models import User
 
 
 class UserCreateView(CreateView):
     model = User
     form_class = UserRegisterForm
     template_name = "users/register.html"
-    success_url = reverse_lazy("users:email_sent") #странная отсылка
+    success_url = reverse_lazy("users:email_sent")  # странная отсылка
 
     def form_valid(self, form):
         user = form.save(commit=False)
@@ -60,9 +59,6 @@ class UserProfileUpdateView(LoginRequiredMixin, UpdateView):
         return self.request.user
 
 
-from django.contrib.auth.views import LoginView, LogoutView
-
-
 class CustomLoginView(LoginView):
     template_name = "users/login.html"
 
@@ -79,8 +75,9 @@ class UserListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['can_deactivate'] = self.request.user.has_perm('users.can_deactivate_user')
+        context["can_deactivate"] = self.request.user.has_perm("users.can_deactivate_user")
         return context
+
 
 class UserDetailView(LoginRequiredMixin, DetailView):
     model = User
@@ -93,22 +90,6 @@ class UserDetailView(LoginRequiredMixin, DetailView):
         return User.objects.filter(pk=self.request.user.pk)
 
 
-
-# @permission_required("auth.change_user", raise_exception=True)
-# def block_user(request, user_id):
-#     user = get_object_or_404(User, id=user_id)
-#     user.is_active = False
-#     user.save()
-#     messages.warning(request, f"Пользователь {user.email} был заблокирован.")
-#     return redirect("users:users_list")
-
-
-from django.contrib.auth.decorators import permission_required
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib import messages
-from django.contrib.auth import get_user_model
-
-
 @permission_required("users.can_deactivate_user", raise_exception=True)
 def deactivate_user(request, user_id):
     user = get_object_or_404(User, id=user_id)
@@ -117,13 +98,6 @@ def deactivate_user(request, user_id):
     messages.warning(request, f"Пользователь {user.email} был заблокирован.")
     return redirect("users:user_list")
 
-from django.contrib.auth.views import (
-    PasswordResetView,
-    PasswordResetDoneView,
-    PasswordResetConfirmView,
-    PasswordResetCompleteView,
-)
-from django.urls import reverse_lazy
 
 class UserPasswordResetView(PasswordResetView):
     template_name = "users/password_reset_form.html"
@@ -131,12 +105,19 @@ class UserPasswordResetView(PasswordResetView):
     subject_template_name = "users/password_reset_subject.txt"
     success_url = reverse_lazy("users:password_reset_done")
 
+
 class UserPasswordResetDoneView(PasswordResetDoneView):
     template_name = "users/password_reset_done.html"
+
 
 class UserPasswordResetConfirmView(PasswordResetConfirmView):
     template_name = "users/password_reset_confirm.html"
     success_url = reverse_lazy("users:password_reset_complete")
 
+
 class UserPasswordResetCompleteView(PasswordResetCompleteView):
     template_name = "users/password_reset_complete.html"
+
+
+class EmailSentView(TemplateView):
+    template_name = "users/email_sent.html"

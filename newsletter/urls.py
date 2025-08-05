@@ -1,35 +1,16 @@
 from django.urls import path
 
-import newsletter
 from newsletter import views
 from newsletter.apps import NewsletterConfig
-from newsletter.models import AttemptMailing
-from newsletter.views import (
-    ClientListView,
-    ClientCreateView,
-    ClientDetailView,
-    ClientUpdateView,
-    ClientDeleteView,
-    MailingUpdateView,
-    MailingDeleteView,
-    MailingDetailView,
-    MailingCreateView,
-    MailingListView,
-    MessageDeleteView,
-    MessageUpdateView,
-    MessageDetailView,
-    MessageCreateView,
-    MessageListView,
-    AttemptMailingListView,
-    AttemptMailingDetailView,
-    stop_mailing, MailingStatsView,
-    # UserStatsView, GlobalStatsView, UserListView,
-)
+from newsletter.views import (AttemptMailingDetailView, AttemptMailingListView, ClientCreateView, ClientDeleteView,
+                              ClientDetailView, ClientListView, ClientUpdateView, MailingCreateView, MailingDeleteView,
+                              MailingDetailView, MailingListView, MailingStatsView, MailingUpdateView,
+                              MessageCreateView, MessageDeleteView, MessageDetailView, MessageListView,
+                              MessageUpdateView, stop_mailing)
 
 app_name = NewsletterConfig.name
 
 urlpatterns = [
-    # path('', NewsletterHomeView.as_view(),  name="newsletter"),
     path("clients/", ClientListView.as_view(), name="client_list"),
     path("clients/create/", ClientCreateView.as_view(), name="client_create"),
     path("clients/<int:pk>/", ClientDetailView.as_view(), name="client_detail"),
@@ -49,8 +30,5 @@ urlpatterns = [
     path("attempts/<int:pk>/", AttemptMailingDetailView.as_view(), name="attempt_detail"),
     path("mailing/<int:pk>/send/", views.send_mailing, name="send_mailing"),
     path("<int:pk>/stop/", stop_mailing, name="stop_mailing"),
-    path('mailing/stats/', MailingStatsView.as_view(), name='mailing_stats'),
-    # path("stats/mine/", UserStatsView.as_view(), name="user_stats"),
-    # path("stats/global/", GlobalStatsView.as_view(), name="global_stats"),
-    # path("stats/users/", UserListView.as_view(), name="user_list"),
+    path("mailing/stats/", MailingStatsView.as_view(), name="mailing_stats"),
 ]
