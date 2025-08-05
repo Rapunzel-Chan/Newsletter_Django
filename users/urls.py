@@ -9,7 +9,8 @@ from users.views import (
     CustomLoginView,
     CustomLogoutView,
     deactivate_user,
-    UserListView, UserDetailView, UserProfileUpdateView,
+    UserListView, UserDetailView, UserProfileUpdateView, UserPasswordResetView, UserPasswordResetDoneView,
+    UserPasswordResetConfirmView, UserPasswordResetCompleteView,
 )
 
 app_name = UsersConfig.name
@@ -24,25 +25,24 @@ urlpatterns = [
     # path("profile/", UserProfileView.as_view(), name="profile"),
     # path("profile/edit/", UserProfileUpdateView.as_view(), name="profile_edit"),
     path(
-        "password_reset/",
-        auth_views.PasswordResetView.as_view(
+        "password_reset/", UserPasswordResetView.as_view(
             template_name="users/password_reset_form.html", email_template_name="users/password_reset_password.html"
         ),
         name="password_reset",
     ),
     path(
         "password_reset/done/",
-        auth_views.PasswordResetDoneView.as_view(template_name="users/password_reset_done.html"),
+        UserPasswordResetDoneView.as_view(template_name="users/password_reset_done.html"),
         name="password_reset_done",
     ),
     path(
         "reset/<uidb64>/<token>/",
-        auth_views.PasswordResetConfirmView.as_view(template_name="users/password_reset_confirm.html"),
+        UserPasswordResetConfirmView.as_view(template_name="users/password_reset_confirm.html"),
         name="password_reset_confirm",
     ),
     path(
         "reset/done/",
-        auth_views.PasswordResetCompleteView.as_view(template_name="users/password_reset_complete.html"),
+        UserPasswordResetCompleteView.as_view(template_name="users/password_reset_complete.html"),
         name="password_reset_complete",
     ),
     path("<int:user_id>/deactivate/", deactivate_user, name="deactivate_user"),

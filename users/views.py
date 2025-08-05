@@ -38,7 +38,7 @@ class UserCreateView(CreateView):
             from_email=EMAIL_HOST_USER,
             recipient_list=[user.email],
         )
-        return render(self.request, "users/email_verification_notice.html")
+        return render(self.request, "users/email_verification.html")
 
 
 class EmailVerificationView(View):
@@ -116,3 +116,27 @@ def deactivate_user(request, user_id):
     user.save()
     messages.warning(request, f"Пользователь {user.email} был заблокирован.")
     return redirect("users:user_list")
+
+from django.contrib.auth.views import (
+    PasswordResetView,
+    PasswordResetDoneView,
+    PasswordResetConfirmView,
+    PasswordResetCompleteView,
+)
+from django.urls import reverse_lazy
+
+class UserPasswordResetView(PasswordResetView):
+    template_name = "users/password_reset_form.html"
+    email_template_name = "users/password_reset_password.html"
+    subject_template_name = "users/password_reset_subject.txt"
+    success_url = reverse_lazy("users:password_reset_done")
+
+class UserPasswordResetDoneView(PasswordResetDoneView):
+    template_name = "users/password_reset_done.html"
+
+class UserPasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = "users/password_reset_confirm.html"
+    success_url = reverse_lazy("users:password_reset_complete")
+
+class UserPasswordResetCompleteView(PasswordResetCompleteView):
+    template_name = "users/password_reset_complete.html"
