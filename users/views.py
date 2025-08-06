@@ -20,7 +20,7 @@ class UserCreateView(CreateView):
     model = User
     form_class = UserRegisterForm
     template_name = "users/register.html"
-    success_url = reverse_lazy("users:email_sent")  # странная отсылка
+    success_url = reverse_lazy("users:email_verification")
 
     def form_valid(self, form):
         user = form.save(commit=False)
@@ -119,5 +119,5 @@ class UserPasswordResetCompleteView(PasswordResetCompleteView):
     template_name = "users/password_reset_complete.html"
 
 
-class EmailSentView(TemplateView):
-    template_name = "users/email_sent.html"
+# class EmailSentView(TemplateView):
+#     template_name = "users/email_sent.html"

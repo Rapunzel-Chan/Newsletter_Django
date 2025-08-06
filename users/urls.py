@@ -2,7 +2,7 @@ from django.urls import path
 from django.views.generic import TemplateView
 
 from users.apps import UsersConfig
-from users.views import (CustomLoginView, CustomLogoutView, EmailSentView, EmailVerificationView, UserCreateView,
+from users.views import (CustomLoginView, CustomLogoutView, EmailVerificationView, UserCreateView,
                          UserDetailView, UserListView, UserPasswordResetCompleteView, UserPasswordResetConfirmView,
                          UserPasswordResetDoneView, UserPasswordResetView, UserProfileUpdateView, deactivate_user)
 
@@ -40,5 +40,4 @@ urlpatterns = [
     path("<int:user_id>/deactivate/", deactivate_user, name="deactivate_user"),
     path("<int:pk>/", UserDetailView.as_view(), name="user_detail"),
     path("profile/edit/", UserProfileUpdateView.as_view(), name="profile_edit"),
-    path("email-sent/", EmailSentView.as_view(), name="email_sent"),
 ]
