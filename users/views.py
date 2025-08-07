@@ -3,12 +3,18 @@ import secrets
 from django.contrib import messages
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.views import (LoginView, LogoutView, PasswordResetCompleteView, PasswordResetConfirmView,
-                                       PasswordResetDoneView, PasswordResetView)
+from django.contrib.auth.views import (
+    LoginView,
+    LogoutView,
+    PasswordResetCompleteView,
+    PasswordResetConfirmView,
+    PasswordResetDoneView,
+    PasswordResetView,
+)
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
-from django.views.generic import CreateView, DetailView, ListView, TemplateView, UpdateView, View
+from django.views.generic import CreateView, DetailView, ListView, UpdateView, View
 
 from config.settings import EMAIL_HOST_USER
 
@@ -72,6 +78,18 @@ class UserListView(LoginRequiredMixin, ListView):
     model = User
     template_name = "users/user_list.html"
     context_object_name = "users"
+
+    def get_queryset(self):
+        qs = User.objects.all()
+
+        if self.request.user.is_superuser:
+            return qs
+
+        if self.request.user.groups.filter(name="Менеджеры").exists():
+            qs = qs.exclude(is_superuser=True).exclude(groups__name="Менеджеры")
+            return qs
+
+        return qs.filter(pk=self.request.user.pk)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

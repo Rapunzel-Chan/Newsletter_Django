@@ -1,7 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.mail import send_mail
 from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
@@ -11,6 +10,7 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, T
 
 from newsletter.forms import MailingForm, MessageForm
 from newsletter.models import AttemptMailing, Client, Mailing, Message
+from newsletter.services import MailingService
 
 # Create your views here.
 
@@ -245,13 +245,9 @@ class AttemptMailingDetailView(LoginRequiredMixin, DetailView):
 
 @login_required
 def send_mailing(request, pk):
-    if request.method != "POST":
-        return redirect("newsletter:mailing_list")
-
     mailing = get_object_or_404(Mailing, pk=pk)
-    user = request.user
 
-    if mailing.owner_id != user.id:
+    if mailing.owner != request.user:
         return HttpResponseForbidden("Вы можете отправлять только свои рассылки.")
 
     now = timezone.now()
@@ -264,27 +260,9 @@ def send_mailing(request, pk):
     mailing.status = Mailing.STATUS_CHOICES[1][0]
     mailing.save(update_fields=["first_sending", "status"])
 
-    sent = failed = 0
-    for client in mailing.clients.all():
-        try:
-            send_mail(
-                subject=mailing.message.theme or "Без темы",
-                message=mailing.message.content or "",
-                from_email=None,
-                recipient_list=[client.email],
-                fail_silently=False,
-            )
-        except Exception as exc:
-            AttemptMailing.objects.create(mailing=mailing, status="failed", response=str(exc)[:200])
-            failed += 1
-        else:
-            AttemptMailing.objects.create(mailing=mailing, status="success", response="OK")
-            sent += 1
-
-    mailing.last_sending = timezone.now()
-    mailing.save(update_fields=["status", "last_sending"])
-    messages.success(request, f"Готово: отправлено {sent}, ошибок {failed}.")
-    return redirect("newsletter:mailing_stats", pk=pk)
+    stats = MailingService.process_mailing(mailing)
+    messages.success(request, f"Готово: отправлено {stats['sent']}, ошибок {stats['failed']}.")
+    return redirect("newsletter:mailing_stats")
 
 
 @permission_required("newsletter.change_mailing", raise_exception=True)
