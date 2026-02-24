@@ -1,0 +1,50 @@
+{% extends 'newsletter/base.html' %}
+{% block title %}Пользователи{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <h4 class="fw-bold py-3 mb-4">Список пользователей</h4>
+
+    <div class="card">
+        <h5 class="card-header">Пользователи</h5>
+        <div class="table-responsive text-nowrap">
+            <table class="table">
+                <thead class="table-light">
+                    <tr>
+                        <th>Email</th>
+                        <th>Имя</th>
+                        <th>Статус</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody class="table-border-bottom-0">
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.get_full_name }}</td>
+                        <td>
+                            {% if user.is_active %}
+                                <span class="badge bg-success">Активен</span>
+                            {% else %}
+                                <span class="badge bg-danger">Заблокирован</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.is_active and can_deactivate %}
+                              <a href="{% url 'users:deactivate_user' user.id %}" class="btn btn-sm btn-warning">Заблокировать</a>
+                            {% else %}
+                              <em>Нет действий</em>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">Нет пользователей.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'newsletter/base.html' %}
+{% load static %}
+{% block title %}Профиль пользователя{% endblock %}
+{% block content %}
+<div class="container mt-5">
+  <div class="card mx-auto shadow-sm" style="max-width:500px;">
+    <div class="card-body text-center">
+      <h2>{{ user_obj.get_full_name|default:user_obj.email }}</h2>
+      <img src="{% if user_obj.avatar %}{{ user_obj.avatar.url }}{% else %}{% static 'img/avatar-placeholder.png' %}{% endif %}"
+           alt="Avatar" class="rounded-circle mb-3" width="120">
+      <p><strong>Email:</strong> {{ user_obj.email }}</p>
+      <p><strong>Телефон:</strong> {{ user_obj.phone|default:"Не указан" }}</p>
+      <p><strong>Страна:</strong> {{ user_obj.country|default:"Не указана" }}</p>
+      {% if request.user == user_obj %}
+        <a href="{% url 'users:profile_edit' %}" class="btn btn-outline-primary mt-3">Редактировать профиль</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

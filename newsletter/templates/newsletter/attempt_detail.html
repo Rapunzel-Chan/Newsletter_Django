@@ -1,0 +1,56 @@
+{% extends 'newsletter/base.html' %}
+{% block title %}Детали попытки отправки №{{ attempt.id }}{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y" style="max-width: 600px;">
+  <h4 class="fw-bold py-3 mb-4">Детали попытки отправки №{{ attempt.id }}</h4>
+
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+
+      <dl class="row mb-3">
+        <dt class="col-sm-4 fw-semibold">Рассылка:</dt>
+        <dd class="col-sm-8">{{ attempt.mailing.message.theme }}</dd>
+
+        <dt class="col-sm-4 fw-semibold">Статус:</dt>
+        <dd class="col-sm-8">
+          {% if attempt.status == 'created' %}
+            <span class="badge bg-secondary">Создана</span>
+          {% elif attempt.status == 'running' %}
+            <span class="badge bg-info text-dark">В процессе</span>
+          {% elif attempt.status == 'completed' %}
+            <span class="badge bg-success">Завершена</span>
+          {% elif attempt.status == 'failed' %}
+            <span class="badge bg-danger">Ошибка</span>
+          {% else %}
+            <span class="badge bg-warning text-dark">{{ attempt.status }}</span>
+          {% endif %}
+        </dd>
+
+        <dt class="col-sm-4 fw-semibold">Время начала:</dt>
+        <dd class="col-sm-8">{{ attempt.start_time|date:"d.m.Y H:i:s" }}</dd>
+
+        <dt class="col-sm-4 fw-semibold">Время завершения:</dt>
+        <dd class="col-sm-8">
+          {% if attempt.end_time %}
+            {{ attempt.end_time|date:"d.m.Y H:i:s" }}
+          {% else %}
+            <em>Не завершена</em>
+          {% endif %}
+        </dd>
+
+        <dt class="col-sm-4 fw-semibold">Успешно отправлено:</dt>
+        <dd class="col-sm-8">{{ attempt.sent_count }}</dd>
+
+        <dt class="col-sm-4 fw-semibold">Ошибок при отправке:</dt>
+        <dd class="col-sm-8">{{ attempt.error_count }}</dd>
+      </dl>
+
+      <a href="{% url 'newsletter:attempt_list' %}" class="btn btn-outline-primary">
+        <i class="bx bx-arrow-back"></i> Назад к списку попыток
+      </a>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
